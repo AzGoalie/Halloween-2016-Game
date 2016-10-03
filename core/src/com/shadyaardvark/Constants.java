@@ -17,6 +17,8 @@ public class Constants {
 
     public static final float TIME_STEP = 1 / 60f;
 
+    public static final float PPM = 1 / 128f;
+
     private Constants() {
         // Used for constants!
     }
