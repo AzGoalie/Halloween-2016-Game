@@ -13,9 +13,12 @@
    </properties>
   </tile>
   <tile id="94">
+   <properties>
+    <property name="light" type="bool" value="true"/>
+   </properties>
    <animation>
-    <frame tileid="25" duration="250"/>
-    <frame tileid="33" duration="250"/>
+    <frame tileid="25" duration="100"/>
+    <frame tileid="33" duration="100"/>
    </animation>
   </tile>
  </tileset>
