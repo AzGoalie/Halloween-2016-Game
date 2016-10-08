@@ -1,6 +1,5 @@
 package com.shadyaardvark.maps;
 
-import box2dLight.RayHandler;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -9,12 +8,17 @@ import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.shadyaardvark.Constants;
 
+import box2dLight.RayHandler;
+
 public class MapRenderer implements Disposable {
     private OrthographicCamera camera;
+
     private OrthogonalTiledMapRenderer renderer;
+
     private RayHandler rayHandler;
 
     private World world;
+
     private Box2DDebugRenderer b2dr;
 
     public MapRenderer(Map map, Viewport viewport) {
@@ -46,6 +50,5 @@ public class MapRenderer implements Disposable {
     @Override
     public void dispose() {
         renderer.dispose();
-        rayHandler.dispose();
     }
 }

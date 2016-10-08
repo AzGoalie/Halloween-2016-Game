@@ -33,7 +33,7 @@ public class GameScreen extends ScreenAdapter {
         map = new Map("test.tmx");
         mapRenderer = new MapRenderer(map, viewport);
 
-        Gdx.input.setInputProcessor(null);
+        Gdx.input.setInputProcessor(map.getPlayer());
     }
 
     @Override

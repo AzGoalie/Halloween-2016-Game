@@ -1,16 +1,36 @@
 package com.shadyaardvark.maps;
 
-import box2dLight.PointLight;
-import box2dLight.RayHandler;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.objects.*;
+import com.badlogic.gdx.maps.objects.CircleMapObject;
+import com.badlogic.gdx.maps.objects.EllipseMapObject;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.maps.objects.PolylineMapObject;
+import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.math.Circle;
+import com.badlogic.gdx.math.Ellipse;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Polyline;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.ChainShape;
+import com.badlogic.gdx.physics.box2d.CircleShape;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.Shape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Disposable;
 import com.shadyaardvark.Constants;
+import com.shadyaardvark.Player;
+
+import box2dLight.PointLight;
+import box2dLight.RayHandler;
 
 public class Map implements Disposable {
     private static final String GRAVITY_PROPERTY = "gravity";
@@ -19,36 +39,60 @@ public class Map implements Disposable {
 
     private static final String LIGHT_LAYER = "lights";
 
+    private static final String LADDER = "ladder";
+
+    private static final String PLAYER = "player";
+
     private TiledMap tiledMap;
 
     private World world;
 
     private RayHandler rayHandler;
 
+    private Player player;
+
     public Map(String filename) {
         tiledMap = new TmxMapLoader().load(filename);
 
         Vector2 gravity = Constants.DEFAULT_GRAVITY;
-        if (tiledMap.getProperties().containsKey(GRAVITY_PROPERTY)) {
-            gravity = new Vector2(tiledMap.getProperties().get(GRAVITY_PROPERTY, Float.class), 0);
+        if (tiledMap.getProperties()
+                .containsKey(GRAVITY_PROPERTY)) {
+            gravity = new Vector2(tiledMap.getProperties()
+                    .get(GRAVITY_PROPERTY, Float.class), 0);
         }
         world = new World(gravity, true);
 
+        RayHandler.setGammaCorrection(true);
+        RayHandler.useDiffuseLight(true);
         rayHandler = new RayHandler(world);
-        rayHandler.setAmbientLight(0.2f);
+        rayHandler.setAmbientLight(0.2f, 0.2f, 0.2f, 1f);
+        rayHandler.setBlurNum(3);
 
         createCollisions();
         createLights();
     }
 
     public void update(float dt) {
+        player.update(dt);
+
         world.step(dt, 8, 3);
+
     }
 
     private void createCollisions() {
-        MapLayer collisionLayer = tiledMap.getLayers().get(COLLISION_LAYER);
+        MapLayer collisionLayer = tiledMap.getLayers()
+                .get(COLLISION_LAYER);
         for (MapObject object : collisionLayer.getObjects()) {
             if (object instanceof TextureMapObject) {
+                continue;
+            }
+
+            if (PLAYER.equals(object.getName())) {
+                float x = object.getProperties()
+                        .get("x", 0f, Float.class) * Constants.PPM;
+                float y = object.getProperties()
+                        .get("y", 0f, Float.class) * Constants.PPM;
+                player = new Player(world, new Vector2(x, y));
                 continue;
             }
 
@@ -73,19 +117,23 @@ public class Map implements Disposable {
             BodyDef bodyDef = new BodyDef();
             bodyDef.type = BodyDef.BodyType.StaticBody;
             Body body = world.createBody(bodyDef);
-            body.createFixture(shape, 1);
+            Fixture fixture = body.createFixture(shape, 1);
+            if (LADDER.equals(object.getName())) {
+                fixture.setSensor(true);
+            }
 
             shape.dispose();
         }
     }
 
     private void createLights() {
-        MapLayer lightLayer = tiledMap.getLayers().get(LIGHT_LAYER);
+        MapLayer lightLayer = tiledMap.getLayers()
+                .get(LIGHT_LAYER);
         for (MapObject light : lightLayer.getObjects()) {
             Ellipse shape = ((EllipseMapObject) light).getEllipse();
             new PointLight(rayHandler,
                     Constants.NUM_RAYS,
-                    null,
+                    new Color(1, 1, 1, 0.5f),
                     shape.width * Constants.PPM,
                     (shape.x + shape.width / 2) * Constants.PPM,
                     (shape.y + shape.height / 2) * Constants.PPM);
@@ -94,17 +142,13 @@ public class Map implements Disposable {
 
     private PolygonShape getRectangle(Rectangle rectangle) {
         PolygonShape polygonShape = new PolygonShape();
-        Vector2 size = new Vector2(
-                Constants.PPM * (rectangle.x + rectangle.width * 0.5f),
-                Constants.PPM * (rectangle.y + rectangle.height * 0.5f)
-        );
+        Vector2 size = new Vector2(Constants.PPM * (rectangle.x + rectangle.width * 0.5f),
+                Constants.PPM * (rectangle.y + rectangle.height * 0.5f));
 
-        polygonShape.setAsBox(
-                Constants.PPM * (rectangle.width * 0.5f),
+        polygonShape.setAsBox(Constants.PPM * (rectangle.width * 0.5f),
                 Constants.PPM * (rectangle.height * 0.5f),
                 size,
-                0.0f
-        );
+                0.0f);
 
         return polygonShape;
     }
@@ -156,9 +200,14 @@ public class Map implements Disposable {
         return rayHandler;
     }
 
+    public Player getPlayer() {
+        return player;
+    }
+
     @Override
     public void dispose() {
         world.dispose();
         tiledMap.dispose();
+        rayHandler.dispose();
     }
 }
