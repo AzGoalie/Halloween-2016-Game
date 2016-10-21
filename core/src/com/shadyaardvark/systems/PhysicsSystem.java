@@ -14,7 +14,7 @@ import com.shadyaardvark.components.PhysicsComponent;
 import com.shadyaardvark.components.TransformComponent;
 
 public class PhysicsSystem extends IteratingSystem {
-    private static final float STEP_TIME = 1 / 60f;
+    private static final float STEP_TIME = 1 / 300f;
 
     private float accumulator = 0f;
 

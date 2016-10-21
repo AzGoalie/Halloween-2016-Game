@@ -39,20 +39,20 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.shadyaardvark.Constants;
 import com.shadyaardvark.HalloweenGame2016;
+import com.shadyaardvark.Player;
 import com.shadyaardvark.components.LightComponent;
 import com.shadyaardvark.components.PhysicsComponent;
-import com.shadyaardvark.components.PlayerComponent;
 import com.shadyaardvark.components.TransformComponent;
 import com.shadyaardvark.listeners.LightListener;
 import com.shadyaardvark.systems.Box2DDebugSystem;
 import com.shadyaardvark.systems.LightingSystem;
 import com.shadyaardvark.systems.MapRenderSystem;
 import com.shadyaardvark.systems.PhysicsSystem;
-import com.shadyaardvark.systems.PlayerSystem;
 
 import box2dLight.RayHandler;
 
 public class GameScreen extends ScreenAdapter {
+
     private Viewport viewport;
 
     private OrthographicCamera camera;
@@ -72,6 +72,8 @@ public class GameScreen extends ScreenAdapter {
     private RayHandler rayHandler;
 
     private LightingSystem lightingSystem;
+
+    private Player player;
 
     public GameScreen(HalloweenGame2016 game) {
         camera = new OrthographicCamera();
@@ -98,7 +100,6 @@ public class GameScreen extends ScreenAdapter {
         engine.addSystem(mapRenderSystem);
         engine.addSystem(lightingSystem);
         engine.addSystem(box2DDebugSystem);
-        engine.addSystem(new PlayerSystem());
 
         engine.addEntityListener(LightListener.getFamily(), new LightListener(rayHandler));
 
@@ -106,6 +107,7 @@ public class GameScreen extends ScreenAdapter {
         spookyMusic.setLooping(true);
 
         createMap();
+        Gdx.input.setInputProcessor(null);
     }
 
     @Override
@@ -136,6 +138,8 @@ public class GameScreen extends ScreenAdapter {
 
     @Override
     public void render(float delta) {
+        player.handleInput();
+
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -193,14 +197,16 @@ public class GameScreen extends ScreenAdapter {
             }
 
             BodyDef bodyDef = new BodyDef();
-
+            Body body;
             if ("player".equals(object.getName())) {
-                entity.add(new PlayerComponent());
                 bodyDef.type = BodyDef.BodyType.DynamicBody;
+                body = world.createBody(bodyDef);
+                player = new Player(world, body);
             } else {
                 bodyDef.type = BodyDef.BodyType.StaticBody;
+                body = world.createBody(bodyDef);
             }
-            Body body = world.createBody(bodyDef);
+
             Fixture fixture = body.createFixture(shape, 1);
             if ("ladder".equals(object.getName())) {
                 fixture.setSensor(true);

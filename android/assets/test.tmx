@@ -22,7 +22,7 @@
    eJxjYKAOiCeRT21gTYQaWyBWAeLLZGIVCtwH0ktqGMH4lNpLLhiocEIGpIQZPcIJWzpTYRhNV6SAoZiuXCiw1weLODHlFUjvagowAPggQss=
   </data>
  </layer>
- <objectgroup name="collisions" visible="0">
+ <objectgroup name="collisions">
   <object id="1" x="0" y="3072" width="1920" height="128"/>
   <object id="2" x="0" y="2432" width="1792" height="64"/>
   <object id="3" x="128" y="1792" width="1792" height="64"/>
@@ -35,9 +35,9 @@
   <object id="50" name="ladder" x="0" y="1792" width="128" height="640"/>
   <object id="51" name="ladder" x="1792" y="1152" width="128" height="640"/>
   <object id="52" name="ladder" x="0" y="512" width="128" height="640"/>
-  <object id="53" name="player" x="0" y="2944" width="128" height="128"/>
+  <object id="53" name="player" x="32" y="2944" width="64" height="128"/>
  </objectgroup>
- <objectgroup name="lights" visible="0">
+ <objectgroup name="lights">
   <object id="11" x="96" y="2432" width="672" height="672">
    <ellipse/>
   </object>
